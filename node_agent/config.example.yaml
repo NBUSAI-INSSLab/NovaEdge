@@ -1,0 +1,88 @@
+# NovaEdge 节点 Agent 配置
+# 复制本文件为 config.yaml 后按现场情况修改。
+# 平台签发的设备凭证见 backend/data/device_credentials.json
+
+node:
+  # 节点唯一编码，必须与平台上注册的 node_uid 一致
+  node_uid: "RPI-LAB-A01"
+  # 平台接入凭证（新建节点或重置凭证时由平台一次性下发）
+  access_key: "ak_rpi_lab_a01_48ec331a"
+  secret: "EBubksARIFWhkq6pkx0ydT9LmWjUmb37"
+  # 便于运维识别的本机信息
+  model: "Raspberry Pi 4B 8GB"
+  serial_no: "SNRPILABA01"
+  location: "实验楼A区 305 机房"
+  agent_version: "1.0.0"
+
+server:
+  # 平台地址（树莓派/香橙派可达即可）
+  base_url: "http://127.0.0.1:5000"
+  # 接口超时（秒）
+  timeout: 30
+  # 断网时本地缓存目录（数据不丢，恢复后自动补传）
+  spool_dir: "spool"
+  # 单个缓存文件最大保留条数，超出后丢弃最旧数据
+  spool_max_batches: 2000
+
+schedule:
+  # 传感器采集与上报周期（秒）
+  report_interval: 30
+  # 心跳周期（秒），建议为上报周期的 1/2
+  heartbeat_interval: 15
+  # 定时抓拍周期（秒），0 表示关闭定时抓拍
+  capture_interval: 120
+  # 定时录像周期（秒），0 表示关闭；录像时长见 camera.video_duration
+  record_interval: 0
+
+sensors:
+  # 采集后端：mock(模拟) / system(系统资源) / ds18b20 / dht22 / ads1115
+  # 树莓派常用组合： [system, ds18b20, dht22]
+  # 开发机上使用 [system, mock] 即可
+  backends: ["system", "mock"]
+  # mock 后端生成的指标（用于无硬件的联调演示）
+  mock_metrics:
+    temperature: {base: 24.5, amplitude: 2.0, noise: 0.3, unit: "℃"}
+    humidity: {base: 55.0, amplitude: 8.0, noise: 1.5, unit: "%RH"}
+    light_lux: {base: 420.0, amplitude: 180.0, noise: 20.0, unit: "lux"}
+    co2_ppm: {base: 620.0, amplitude: 120.0, noise: 25.0, unit: "ppm"}
+    pm25: {base: 28.0, amplitude: 10.0, noise: 4.0, unit: "μg/m³"}
+  # DS18B20 温度传感器（1-Wire）
+  ds18b20:
+    device_id: "28-000000000000"
+    sysfs_path: "/sys/bus/w1/devices"
+    metric: "temperature"
+  # DHT22 温湿度传感器
+  dht22:
+    pin: 4
+  # ADS1115 模数转换（采集电压/电流等模拟量）
+  ads1115:
+    i2c_address: 0x48
+    channels:
+      - {channel: 0, metric: "voltage", scale: 1.0, unit: "V"}
+      - {channel: 1, metric: "current", scale: 0.5, unit: "A"}
+
+camera:
+  # 采集后端：auto / mock / picamera2 / opencv / ffmpeg
+  backend: "auto"
+  # 抓拍分辨率与画质
+  image_resolution: [1280, 720]
+  image_quality: 88
+  # 录像参数
+  video_resolution: [1280, 720]
+  video_fps: 20
+  video_duration: 12
+  # mock 后端在无真实摄像头时生成合成图像/视频（联调用）
+  mock_enabled: true
+  mock_objects: 3
+
+mqtt:
+  # 遥测/心跳可走 MQTT 上报；未启用时统一走 HTTP
+  enabled: false
+  host: "127.0.0.1"
+  port: 1883
+  topic_prefix: "edge"
+  keepalive: 60
+
+logging:
+  level: "INFO"
+  file: ""      # 留空则只输出到控制台

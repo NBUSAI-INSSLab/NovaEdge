@@ -1,0 +1,7 @@
+requests>=2.31
+PyYAML>=6.0
+psutil>=5.9            # 系统资源采集（CPU/内存/磁盘/温度）
+paho-mqtt>=2.0         # 可选：遥测走 MQTT 上报时启用
+Pillow>=10.0           # 无真实摄像头时的模拟图像
+opencv-python-headless # 无真实摄像头时的模拟视频（可选，测试用）
+pyserial>=3.5          # 可选：串口传感器

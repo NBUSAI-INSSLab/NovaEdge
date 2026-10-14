@@ -1,0 +1,14 @@
+# -*- coding: utf-8 -*-
+"""EdgeControl 物联网节点管理平台 —— 后端依赖。"""
+
+Flask>=3.0
+Flask-SQLAlchemy>=3.1
+Flask-Cors>=4.0
+Flask-JWT-Extended>=4.6
+PyMySQL>=1.1              # MySQL 驱动（生产）
+cryptography>=42.0        # pymysql 使用 caching_sha2_password 时需要
+paho-mqtt>=2.0            # MQTT 接入（可选，未启用 MQTT 时不影响运行）
+Pillow>=10.0              # 图片缩略图
+python-dotenv>=1.0
+requests>=2.31            # 模拟节点 / 压测脚本
+pytest>=8.0               # 单元测试
