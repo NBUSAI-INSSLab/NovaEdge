@@ -21,6 +21,35 @@ const historyHours = ref(6)
 const seriesData = ref({})         // { `${nodeId}:${metric}`: [points] }
 const focusNodeId = ref(null)
 
+// 对比指标多选下拉
+const metricOpen = ref(false)
+const metricBox = ref(null)
+
+const selectedMetricDefs = computed(() =>
+  selectedMetrics.value.map((key) => metricDefs.value.find((item) => item.metric_key === key) || { metric_key: key, name: key, unit: '' })
+)
+
+function toggleMetric(key) {
+  const index = selectedMetrics.value.indexOf(key)
+  if (index >= 0) {
+    if (selectedMetrics.value.length === 1) return   // 至少保留一个指标
+    selectedMetrics.value.splice(index, 1)
+  } else {
+    selectedMetrics.value.push(key)
+  }
+  loadSeries()
+}
+
+function clearMetrics() {
+  if (!metricDefs.value.length) return
+  selectedMetrics.value = [metricDefs.value[0].metric_key]
+  loadSeries()
+}
+
+function onDocClick(event) {
+  if (metricBox.value && !metricBox.value.contains(event.target)) metricOpen.value = false
+}
+
 async function loadNodes() {
   const res = await api.nodes.list({ page: 1, page_size: 100 })
   if (res.code === 0) {
@@ -73,8 +102,17 @@ async function loadSeries() {
   seriesData.value = result
 }
 
-onMounted(loadAll)
-onUnmounted(() => {})
+let refreshTimer = null
+
+onMounted(() => {
+  loadAll()
+  document.addEventListener('click', onDocClick)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', onDocClick)
+  clearInterval(refreshTimer)
+})
 
 // 实时刷新：收到该节点的遥测事件后更新最新值
 realtime.connect({
@@ -91,7 +129,7 @@ realtime.connect({
   }
 }, 'monitor')
 
-setInterval(() => { loadLatestAll() }, 30000)
+refreshTimer = setInterval(() => { loadLatestAll() }, 30000)
 
 /** 表格列：以节点为行，指标为动态列 */
 const tableMetrics = computed(() => {
@@ -191,11 +229,42 @@ function toggleCompare(id) {
           <div class="divider-v" />
           <div class="row gap-8">
             <span class="small muted">对比指标</span>
-            <select v-model="selectedMetrics" class="select" multiple style="width: 240px; height: 34px" @change="loadSeries">
-              <option v-for="item in metricDefs" :key="item.metric_key" :value="item.metric_key">
-                {{ item.name }}<template v-if="item.unit">（{{ item.unit }}）</template>
-              </option>
-            </select>
+            <div ref="metricBox" class="msel" :class="{ open: metricOpen }">
+              <button type="button" class="msel-trigger" @click="metricOpen = !metricOpen">
+                <span class="msel-value">
+                  <template v-if="selectedMetricDefs.length === 1">
+                    {{ selectedMetricDefs[0].name }}<span v-if="selectedMetricDefs[0].unit" class="msel-unit">/{{ selectedMetricDefs[0].unit }}</span>
+                  </template>
+                  <template v-else-if="selectedMetricDefs.length > 1">
+                    {{ selectedMetricDefs[0].name }}
+                    <span class="msel-more">+{{ selectedMetricDefs.length - 1 }}</span>
+                  </template>
+                  <span v-else class="msel-placeholder">请选择指标</span>
+                </span>
+                <AppIcon name="chevron-down" :size="13" class="msel-caret" />
+              </button>
+
+              <div v-if="metricOpen" class="msel-panel">
+                <div class="msel-panel-head">
+                  <span class="tiny muted">已选 {{ selectedMetrics.length }} / {{ metricDefs.length }}</span>
+                  <button type="button" class="msel-reset tiny" @click="clearMetrics">恢复默认</button>
+                </div>
+                <div class="msel-list">
+                  <div
+                    v-for="item in metricDefs"
+                    :key="item.metric_key"
+                    class="msel-item"
+                    :class="{ on: selectedMetrics.includes(item.metric_key) }"
+                    @click="toggleMetric(item.metric_key)"
+                  >
+                    <span class="msel-box"><AppIcon v-if="selectedMetrics.includes(item.metric_key)" name="check" :size="10" :stroke="2.6" /></span>
+                    <span class="msel-name">{{ item.name }}</span>
+                    <span v-if="item.unit" class="msel-unit">{{ item.unit }}</span>
+                  </div>
+                  <div v-if="!metricDefs.length" class="msel-empty tiny muted">暂无可用指标</div>
+                </div>
+              </div>
+            </div>
           </div>
           <div class="row gap-6">
             <button
@@ -343,8 +412,64 @@ function toggleCompare(id) {
 .node-link { font-weight: 500; }
 .stale { opacity: 0.55; }
 
-select[multiple] { height: auto; min-height: 34px; padding: 4px; }
-select[multiple] option { padding: 2px 6px; border-radius: 4px; }
+/* ---------- 对比指标：下拉多选面板 ---------- */
+.msel { position: relative; flex-shrink: 0; }
+.msel-trigger {
+  display: inline-flex; align-items: center; gap: 8px;
+  width: 232px; height: 34px; padding: 0 10px;
+  background: var(--c-surface); border: 1px solid var(--c-border);
+  border-radius: var(--radius); color: var(--c-text);
+  font-size: 13px; font-family: inherit; cursor: pointer; text-align: left;
+  transition: border-color .15s, box-shadow .15s;
+}
+.msel-trigger:hover { border-color: var(--c-primary-300); }
+.msel.open .msel-trigger { border-color: var(--c-primary); box-shadow: 0 0 0 3px var(--c-primary-100); }
+.msel-value {
+  flex: 1; min-width: 0; display: flex; align-items: center; gap: 6px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.msel-placeholder { color: var(--c-text-3); }
+.msel-unit { color: var(--c-text-3); font-size: 11.5px; flex-shrink: 0; }
+.msel-more {
+  flex-shrink: 0; padding: 0 6px; border-radius: 8px; font-size: 11px; line-height: 16px;
+  background: var(--c-primary-100); color: var(--c-primary-600);
+}
+.msel-caret { color: var(--c-text-3); flex-shrink: 0; transition: transform .16s ease; }
+.msel.open .msel-caret { transform: rotate(180deg); }
+
+.msel-panel {
+  position: absolute; z-index: 60; top: calc(100% + 6px); left: 0;
+  width: 300px; background: var(--c-surface);
+  border: 1px solid var(--c-border); border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg); overflow: hidden;
+}
+.msel-panel-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 12px; background: var(--c-surface-2); border-bottom: 1px solid var(--c-border-soft);
+}
+.msel-reset {
+  border: none; background: transparent; color: var(--c-primary-600);
+  font-family: inherit; cursor: pointer; padding: 0;
+}
+.msel-reset:hover { text-decoration: underline; }
+.msel-list { max-height: 264px; overflow-y: auto; padding: 6px; }
+.msel-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 8px; border-radius: var(--radius-sm);
+  cursor: pointer; font-size: 13px; color: var(--c-text-2);
+  transition: background .12s, color .12s;
+}
+.msel-item:hover { background: var(--c-surface-2); color: var(--c-text); }
+.msel-item.on { background: var(--c-primary-50); color: var(--c-primary-700); font-weight: 500; }
+.msel-box {
+  width: 15px; height: 15px; flex-shrink: 0; border-radius: 4px;
+  border: 1.5px solid var(--c-border-strong); background: var(--c-surface);
+  display: inline-flex; align-items: center; justify-content: center;
+  color: #fff; transition: background .12s, border-color .12s;
+}
+.msel-item.on .msel-box { background: var(--c-primary); border-color: var(--c-primary); }
+.msel-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.msel-empty { padding: 14px 0; text-align: center; }
 
 .chip-row { display: flex; gap: 6px; flex-wrap: wrap; }
 .chip {
