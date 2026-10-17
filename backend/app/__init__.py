@@ -126,7 +126,7 @@ def _register_meta_routes(app: Flask) -> None:
     def api_index():
         return jsonify({
             "code": 0,
-            "message": "NovaEdge 物联网节点管理平台 API",
+            "message": "NovaEdge 边缘智算管理平台 API",
             "data": {
                 "version": "1.0.0",
                 "docs": "/api/v1/meta/endpoints",

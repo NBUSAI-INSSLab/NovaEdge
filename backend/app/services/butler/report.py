@@ -259,7 +259,7 @@ def _llm_polish(snapshot: dict, builtin_md: str) -> str | None:
     from . import llm
     if not llm.is_enabled():
         return None
-    system = ("你是 NovaEdge 物联网平台的资深运维分析师。请基于提供的平台数据快照，"
+    system = ("你是 NovaEdge 边缘智算管理平台的资深运维分析师。请基于提供的平台数据快照，"
               "撰写一份中文 Markdown 格式的《平台运行分析报告》，结构包含：平台概况、节点状态、"
               "数据采集分析、告警分析、数据资产管理、结论与建议。要求：数字必须来自快照不得编造；"
               "使用 Markdown 表格呈现关键数据；给出有依据的运维建议；篇幅适中（600~1200 字）。")

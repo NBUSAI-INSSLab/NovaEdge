@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""EdgeControl 物联网节点管理平台 —— 后端依赖。"""
+"""NovaEdge 边缘智算管理平台 —— 后端依赖。"""
 
 Flask>=3.0
 Flask-SQLAlchemy>=3.1

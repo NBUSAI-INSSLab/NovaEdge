@@ -61,7 +61,7 @@ async function submit() {
           </svg>
           <div>
             <h1>NovaEdge</h1>
-            <p>物联网节点管理平台</p>
+            <p>边缘智算管理平台</p>
           </div>
         </div>
 

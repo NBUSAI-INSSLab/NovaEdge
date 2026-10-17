@@ -56,7 +56,7 @@ router.beforeEach(async (to) => {
 
 router.afterEach((to) => {
   const title = to.meta?.title
-  document.title = title ? `${title} · NovaEdge 物联网节点管理平台` : 'NovaEdge 物联网节点管理平台'
+  document.title = title ? `${title} · NovaEdge 边缘智算管理平台` : 'NovaEdge 边缘智算管理平台'
 })
 
 export default router

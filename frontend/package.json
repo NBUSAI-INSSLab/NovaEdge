@@ -2,7 +2,7 @@
   "name": "novaedge-console",
   "version": "1.0.0",
   "private": true,
-  "description": "NovaEdge 物联网节点管理平台 - Web 控制台",
+  "description": "NovaEdge 边缘智算管理平台 - Web 控制台",
   "type": "module",
   "scripts": {
     "dev": "vite",

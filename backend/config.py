@@ -33,7 +33,7 @@ def _env_bool(key: str, default: bool = False) -> bool:
 
 class Config:
     # ---------- 基础 ----------
-    APP_NAME = "NovaEdge 物联网节点管理平台"
+    APP_NAME = "NovaEdge 边缘智算管理平台"
     SECRET_KEY = os.getenv("SECRET_KEY", "novaedge-dev-secret-please-change-in-prod")
     JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", SECRET_KEY)
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=int(os.getenv("JWT_HOURS", "12")))

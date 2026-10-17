@@ -76,7 +76,7 @@ async function handleLogout() {
         </div>
         <div v-if="!collapsed" class="brand-text">
           <div class="brand-name">NovaEdge</div>
-          <div class="brand-sub">物联网节点管理平台</div>
+          <div class="brand-sub">边缘智算管理平台</div>
         </div>
       </div>
 
@@ -213,7 +213,7 @@ async function handleLogout() {
           </transition>
         </router-view>
         <footer class="page-footer">
-          NovaEdge 物联网节点管理平台 · 边缘计算节点数据汇聚与运维
+          NovaEdge 边缘智算管理平台 · 边缘节点数据汇聚与智能运维
         </footer>
       </main>
     </div>

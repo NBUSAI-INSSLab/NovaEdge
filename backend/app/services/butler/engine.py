@@ -15,7 +15,7 @@ from . import llm, tools
 
 MAX_TOOL_ROUNDS = 6
 
-SYSTEM_PROMPT = """你是 NovaEdge 物联网节点管理平台的「智能管家」，负责协助用户管理边缘计算节点。
+SYSTEM_PROMPT = """你是 NovaEdge 边缘智算管理平台的「智能管家」，负责协助用户管理边缘计算节点。
 平台管理树莓派、香橙派等边缘节点，采集传感器遥测数据（温度/湿度/CO2/光照/CPU/内存等）、
 图片与视频资产，支持阈值告警与远程指令下发。
 
